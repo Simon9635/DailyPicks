@@ -1,0 +1,48 @@
+name: KRX Volume Spike Bot
+
+on:
+  schedule:
+    - cron: '0 22 * * *'   # 07:00 Asia/Seoul = 22:00 UTC
+  workflow_dispatch: {}     # 수동 실행 버튼
+
+jobs:
+  run:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+          cache: 'pip'
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+
+      - name: Telegram smoke test
+        env:
+          TG_BOT_TOKEN: ${{ secrets.TG_BOT_TOKEN }}
+          TG_CHAT_ID:   ${{ secrets.TG_CHAT_ID }}
+        run: |
+          python tg_smoke.py
+
+      - name: Run KRX volume spike bot
+        env:
+          TG_BOT_TOKEN: ${{ secrets.TG_BOT_TOKEN }}
+          TG_CHAT_ID:   ${{ secrets.TG_CHAT_ID }}
+          # ---- 옵션 (원하면 수정) ----
+          MIN_REL_VOL: "5.0"                 # 전일 대비 5배
+          TOP_N: "30"
+          MIN_PRICE_KRW: "1000"
+          MIN_MARCAP_KRW: "1000000000000"    # 1조원 이상 우선
+          EARLY_STAGE_LOW: "-30"
+          EARLY_STAGE_HIGH: "-10"
+          INCLUDE_KOSPI: "1"
+          INCLUDE_KOSDAQ: "1"
+          PAUSE_SEC: "0.03"
+        run: |
+          python vol_spike_krx.py
