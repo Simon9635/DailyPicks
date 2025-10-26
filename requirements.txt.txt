@@ -1,0 +1,6 @@
+pandas>=2.2
+finance-datareader>=0.9.90
+requests>=2.32
+pytz>=2024.1
+beautifulsoup4>=4.12
+html5lib>=1.1
